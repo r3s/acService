@@ -63,7 +63,7 @@ public class RecorderService extends AccessibilityService {
 
     /**
      *
-     * Returns the path of the image specified in the intent provided
+     * Returns the string representation of event's text
      *
      * @param  event     the event which has occured
      * @return           string representation of the event's text
